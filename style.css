@@ -189,3 +189,44 @@ tbody tr:hover { background: #f8fafc; }
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.error { background: var(--expense); }
+
+/* Monthly category breakdown */
+.breakdown-panel { margin-bottom: 24px; }
+.breakdown-header {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.breakdown-header h2 { margin-bottom: 0; }
+#breakdownMonth {
+  padding: 8px 12px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-family: inherit; font-size: 0.9rem;
+  background: #f8fafc;
+}
+#breakdownMonth:focus { outline: none; border-color: var(--primary); background: #fff; }
+.breakdown-row { margin-bottom: 14px; }
+.breakdown-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.breakdown-right { display: flex; gap: 12px; align-items: baseline; }
+.breakdown-amount { font-weight: 600; font-size: 0.92rem; }
+.breakdown-pct {
+  font-weight: 800; font-size: 0.9rem; color: var(--primary);
+  min-width: 52px; text-align: right;
+}
+.bar {
+  height: 10px; background: #eef2f7;
+  border-radius: 999px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), #8b5cf6);
+  transition: width 0.4s ease;
+}
+.breakdown-empty { color: var(--muted); padding: 18px 0; text-align: center; }
+.breakdown-total {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 0.9rem;
+}
+.breakdown-total strong { color: var(--expense); }

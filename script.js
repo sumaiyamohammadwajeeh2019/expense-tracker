@@ -120,6 +120,64 @@ function escapeHtml(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// ---------------- Monthly category breakdown ----------------
+function currentMonthKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+function renderCategoryBreakdown() {
+  const monthKey = $('breakdownMonth').value || currentMonthKey();
+  const body = $('categoryBreakdownBody');
+  const totalEl = $('breakdownTotal');
+
+  // Expenses of the selected month only
+  const monthExpenses = expenses.filter(
+    (e) => e.type === 'Expense' && String(e.date).substring(0, 7) === monthKey
+  );
+  const total = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
+
+  const monthLabel = new Date(monthKey + '-01T00:00:00')
+    .toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+  if (total === 0) {
+    body.innerHTML = '<div class="breakdown-empty">No expenses recorded for ' + monthLabel + '.</div>';
+    totalEl.textContent = '';
+    return;
+  }
+
+  // Sum per category
+  const perCategory = {};
+  monthExpenses.forEach((e) => {
+    perCategory[e.category] = (perCategory[e.category] || 0) + Number(e.amount);
+  });
+
+  body.innerHTML = Object.entries(perCategory)
+    .sort((a, b) => b[1] - a[1])
+    .map(([cat, amt]) => {
+      const pct = (amt / total) * 100;
+      return `
+      <div class="breakdown-row">
+        <div class="breakdown-head">
+          <span class="cat-tag">${escapeHtml(cat)}</span>
+          <span class="breakdown-right">
+            <span class="breakdown-amount">${money(amt)}</span>
+            <span class="breakdown-pct">${pct.toFixed(1)}%</span>
+          </span>
+        </div>
+        <div class="bar">
+          <div class="bar-fill" style="width:${pct.toFixed(2)}%"></div>
+        </div>
+      </div>`;
+    })
+    .join('');
+
+  const catCount = Object.keys(perCategory).length;
+  totalEl.innerHTML =
+    `Total ${escapeHtml(monthLabel)} expenses: <strong>${money(total)}</strong>` +
+    ` across ${catCount} categor${catCount === 1 ? 'y' : 'ies'}`;
+}
+
 function render() {
   const list = applyFilters().sort((a, b) => (a.date < b.date ? 1 : -1));
   const tbody = $('expenseTableBody');
@@ -151,6 +209,7 @@ function render() {
       </tr>`).join('');
   }
   $('recordCount').textContent = expenses.length + ' records';
+  renderCategoryBreakdown();
 }
 
 // ---------------- Form actions ----------------
@@ -227,6 +286,7 @@ window.removeExpense = async function (id) {
 // ---------------- Event wiring ----------------
 $('cancelEditBtn').addEventListener('click', resetForm);
 $('refreshBtn').addEventListener('click', () => loadExpenses(true));
+$('breakdownMonth').addEventListener('input', render);
 ['searchInput', 'filterType', 'filterFrom', 'filterTo'].forEach((id) =>
   $(id).addEventListener('input', render)
 );
@@ -240,6 +300,7 @@ $('clearFiltersBtn').addEventListener('click', () => {
 
 // ---------------- Init ----------------
 $('date').valueAsDate = new Date();
+$('breakdownMonth').value = currentMonthKey();
 expenses = loadCache();
 render();
 loadExpenses();
