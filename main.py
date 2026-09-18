@@ -15,8 +15,10 @@ import http.server
 import os
 import socketserver
 
-HOST = '127.0.0.1'
-PORT = 8000
+# Render (and most PaaS platforms) inject the public port via the PORT env
+# variable and require binding to 0.0.0.0 to accept external traffic.
+HOST = '0.0.0.0'
+PORT = int(os.environ.get('PORT', 8000))
 
 # Always serve from the folder this script lives in.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -32,6 +34,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 def main():
+    socketserver.TCPServer.allow_reuse_address = True  # avoid 'address in use' on redeploys
     with socketserver.TCPServer((HOST, PORT), Handler) as httpd:
         url = f'http://{HOST}:{PORT}'
         print('=' * 50)

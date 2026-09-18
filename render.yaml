@@ -1,0 +1,14 @@
+services:
+  # Web service: serves the static frontend via Python's built-in HTTP server.
+  # Data still lives in Google Sheets (see Code.gs for the Apps Script backend).
+  - type: web
+    name: expense-tracker
+    runtime: python
+    plan: free
+    region: singapore
+    repo: https://github.com/sumaiyamohammadwajeeh2019/expense-tracker
+    branch: main
+    autoDeploy: true
+    buildCommand: pip install --upgrade pip
+    startCommand: python main.py
+    healthCheckPath: /
