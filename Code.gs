@@ -34,7 +34,16 @@ const SHEET_ID = '17Ey6vxNclSB__PSigsvpd2pje4cOURbBpo4JWqMu5nw';
 const SHEET_NAME = 'Expenses';
 
 // The exact header row we maintain
-const HEADERS = ['ID', 'Date', 'Type', 'Category', 'Description', 'Amount'];
+const HEADERS = ['ID', 'Date', 'Type', 'Category', 'Description', 'Amount', 'User'];
+
+// Column indexes (0-based) inside the sheet
+const COL_ID = 0;
+const COL_DATE = 1;
+const COL_TYPE = 2;
+const COL_CATEGORY = 3;
+const COL_DESCRIPTION = 4;
+const COL_AMOUNT = 5;
+const COL_USER = 6;
 
 /** Get (and create if missing) the Expenses sheet with headers. */
 function getSheet_() {
@@ -43,15 +52,32 @@ function getSheet_() {
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow(HEADERS);
-    sheet.getRange('A1:F1').setFontWeight('bold');
+    sheet.getRange('A1:G1').setFontWeight('bold');
     sheet.setFrozenRows(1);
   }
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);
-    sheet.getRange('A1:F1').setFontWeight('bold');
+    sheet.getRange('A1:G1').setFontWeight('bold');
     sheet.setFrozenRows(1);
   }
+  ensureUserColumn_(sheet);
   return sheet;
+}
+
+/**
+ * One-time migration: if the sheet was created before the "User" column
+ * existed, append that column (plus the header) without touching any data.
+ */
+function ensureUserColumn_(sheet) {
+  const lastCol = sheet.getLastColumn();
+  if (lastCol >= COL_USER + 1) return;                 // already migrated
+  const header = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  if (String(header[lastCol - 1]).trim() === 'User') return;
+
+  // Append the new column right after the last existing one.
+  sheet.insertColumnAfter(lastCol);
+  sheet.getRange(1, COL_USER + 1).setValue('User');
+  sheet.getRange(1, 1, 1, COL_USER + 1).setFontWeight('bold');
 }
 
 /** Simple JSON response helper. */
@@ -80,18 +106,21 @@ function doGet(e) {
     const expenses = [];
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
-      if (row[0] === '' || row[0] === null) continue;
+      if (row[COL_ID] === '' || row[COL_ID] === null) continue;
       // Dates may be stored as Date objects OR as 'yyyy-MM-dd' strings
-      const dateStr = (row[1] instanceof Date)
-        ? Utilities.formatDate(row[1], tz, 'yyyy-MM-dd')
-        : String(row[1]).substring(0, 10);
+      const rawDate = row[COL_DATE];
+      const dateStr = (rawDate instanceof Date)
+        ? Utilities.formatDate(rawDate, tz, 'yyyy-MM-dd')
+        : String(rawDate).substring(0, 10);
       expenses.push({
-        id: String(row[0]),
+        id: String(row[COL_ID]),
         date: dateStr,
-        type: String(row[2]),
-        category: String(row[3]),
-        description: String(row[4]),
-        amount: Number(row[5])
+        type: String(row[COL_TYPE]),
+        category: String(row[COL_CATEGORY]),
+        description: String(row[COL_DESCRIPTION]),
+        amount: Number(row[COL_AMOUNT]),
+        user: row[COL_USER] === undefined || row[COL_USER] === null
+          ? '' : String(row[COL_USER])
       });
     }
     return json_({ ok: true, expenses: expenses });
@@ -102,8 +131,8 @@ function doGet(e) {
 
 /**
  * POST handler. Body is JSON:
- *  { action: 'add',    expense: { date, type, category, description, amount } }
- *  { action: 'update', expense: { id, date, type, category, description, amount } }
+ *  { action: 'add',    expense: { user, date, type, category, description, amount } }
+ *  { action: 'update', expense: { id, user, date, type, category, description, amount } }
  *  { action: 'delete', id: '...' }
  */
 function doPost(e) {
@@ -119,7 +148,8 @@ function doPost(e) {
         body.expense.type,
         body.expense.category,
         body.expense.description,
-        Number(body.expense.amount)
+        Number(body.expense.amount),
+        String(body.expense.user || '')
       ]);
       return json_({ ok: true, id: id });
     }
@@ -129,12 +159,13 @@ function doPost(e) {
       const ids = sheet.getRange(2, 1, Math.max(sheet.getLastRow() - 1, 1), 1).getValues();
       for (let i = 0; i < ids.length; i++) {
         if (String(ids[i][0]) === String(body.expense.id)) {
-          sheet.getRange(i + 2, 2, 1, 5).setValues([[
+          sheet.getRange(i + 2, 2, 1, 6).setValues([[
             body.expense.date,
             body.expense.type,
             body.expense.category,
             body.expense.description,
-            Number(body.expense.amount)
+            Number(body.expense.amount),
+            String(body.expense.user || '')
           ]]);
           return json_({ ok: true });
         }

@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Expense Tracker</title>
+  <meta name="author" content="Dr. Sumaiya Mohammad, Physiologist, Bangladesh">
+  <meta name="description" content="Expense Tracker — a public, multi-user expense tracker created by Dr. Sumaiya Mohammad, Physiologist, Bangladesh.">
+  <title>Expense Tracker — Dr. Sumaiya Mohammad</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,7 +14,7 @@
   <div class="app">
     <header class="app-header">
       <h1>💰 Expense Tracker</h1>
-      <p class="subtitle">Made by Dr. Sumaiya Mohammad</p>
+      <p class="subtitle">Made by <strong>Dr. Sumaiya Mohammad</strong> — Physiologist, Bangladesh</p>
       <div id="connectionStatus" class="status status-offline">Connecting...</div>
     </header>
 
@@ -51,6 +53,11 @@
           <div class="field">
             <label for="date">Date</label>
             <input type="date" id="date" required>
+          </div>
+          <div class="field">
+            <label for="user">User (your name)</label>
+            <input type="text" id="user" placeholder="e.g. Sumaiya" maxlength="40" required autocomplete="name">
+            <small class="hint">Shared tracker — every entry is tagged with a user. Your name is remembered on this device.</small>
           </div>
           <div class="field">
             <label for="type">Type</label>
@@ -92,14 +99,23 @@
       <section class="panel">
         <h2>Transactions</h2>
         <div class="filters">
-          <input type="text" id="searchInput" placeholder="🔍 Search description / category">
+          <input type="text" id="searchInput" placeholder="🔍 Search description / category / user">
           <select id="filterType">
             <option value="all">All types</option>
             <option value="Income">Income</option>
             <option value="Expense">Expense</option>
           </select>
+          <select id="filterCategory">
+            <option value="all">All categories</option>
+          </select>
+          <select id="filterUser">
+            <option value="all">All users</option>
+          </select>
           <input type="date" id="filterFrom" title="From date">
           <input type="date" id="filterTo" title="To date">
+          <label class="check" title="Show only transactions tagged with your name">
+            <input type="checkbox" id="filterMine"> Only mine
+          </label>
           <button type="button" class="btn ghost small" id="clearFiltersBtn">Clear</button>
         </div>
 
@@ -108,6 +124,7 @@
             <thead>
               <tr>
                 <th>Date</th>
+                <th>User</th>
                 <th>Type</th>
                 <th>Category</th>
                 <th>Description</th>
@@ -116,7 +133,7 @@
               </tr>
             </thead>
             <tbody id="expenseTableBody">
-              <tr><td colspan="6" class="empty">Loading...</td></tr>
+              <tr><td colspan="7" class="empty">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -127,7 +144,8 @@
     </div>
 
     <footer class="app-footer">
-      <span id="recordCount">0 records</span> • Data stored in Google Sheets
+      <span id="recordCount">0 records</span> • Data stored in Google Sheets<br>
+      <span class="credit">Created by <strong>Dr. Sumaiya Mohammad</strong> — Physiologist, Bangladesh</span>
     </footer>
   </div>
 

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "EXP-1001",
+    "date": "2026-10-22",
+    "type": "Expense",
+    "category": "Food",
+    "description": "Lunch with team",
+    "amount": 850.0,
+    "user": "Sumaiya"
+  },
+  {
+    "id": "EXP-1002",
+    "date": "2026-10-22",
+    "type": "Income",
+    "category": "Salary",
+    "description": "Monthly salary",
+    "amount": 60000.0,
+    "user": "Sumaiya"
+  },
+  {
+    "id": "EXP-1003",
+    "date": "2026-10-22",
+    "type": "Expense",
+    "category": "Transport",
+    "description": "Ride to hospital",
+    "amount": 320.0,
+    "user": "Rahim"
+  },
+  {
+    "id": "EXP-1004",
+    "date": "2026-10-22",
+    "type": "Expense",
+    "category": "Health",
+    "description": "Clinic supplies",
+    "amount": 1200.0,
+    "user": "Karim"
+  }
+]
